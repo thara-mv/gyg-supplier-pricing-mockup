@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GetYourGuide — Supplier Pricing Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red:#E0474C;--redH:#C73A3F;--redL:#FDE8E8;--redBg:#FFF5F5;
+  --dk:#1A1A1A;--g900:#2D2D2D;--g700:#555;--g500:#8C8C8C;--g400:#ADADAD;--g300:#D1D1D1;--g200:#E8E8E8;--g100:#F3F3F3;--g50:#FAFAFA;
+  --wh:#FFF;--grn:#00875A;--grnL:#E6F5EE;--amb:#D97706;--ambL:#FFF7ED;--blu:#0052CC;--bluL:#E6F0FF;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--g50);color:var(--dk);min-height:100vh;display:flex}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:#d1d1d1;border-radius:3px}
+
+/* Layout */
+.sidebar{width:248px;background:var(--wh);border-right:1px solid var(--g200);display:flex;flex-direction:column;flex-shrink:0;position:sticky;top:0;height:100vh;overflow-y:auto}
+.main{flex:1;padding:24px 32px;overflow-y:auto;max-height:100vh}
+.logo-wrap{padding:18px 18px 24px;display:flex;align-items:center;gap:10px}
+.logo-mark{width:34px;height:34px;background:var(--red);border-radius:9px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:#fff}
+.logo-text{font-size:14px;font-weight:700;color:var(--dk);letter-spacing:-0.3px}
+.logo-sub{font-size:9px;color:var(--g500);letter-spacing:2px;text-transform:uppercase}
+
+/* Nav */
+.nav-section{padding:0 10px;margin-bottom:6px}
+.nav-label{font-size:9px;text-transform:uppercase;letter-spacing:2px;color:var(--g400);padding:12px 10px 5px;font-weight:600}
+.nav-item{display:flex;align-items:center;gap:9px;padding:9px 11px;border-radius:8px;cursor:pointer;transition:all .2s;font-size:13px;color:var(--g700);position:relative}
+.nav-item:hover{background:var(--g50)}
+.nav-item.active{background:var(--redBg);color:var(--red);font-weight:600}
+.nav-item.active::before{content:'';position:absolute;left:-10px;top:50%;transform:translateY(-50%);width:3px;height:20px;background:var(--red);border-radius:0 3px 3px 0}
+.nav-item svg{flex-shrink:0}
+
+.sidebar-footer{padding:14px;border-top:1px solid var(--g200);margin-top:auto}
+.supplier-row{display:flex;align-items:center;gap:9px}
+.supplier-avatar{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--red),var(--amb));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+
+/* Cards & KPIs */
+.card{background:var(--wh);border-radius:14px;border:1px solid var(--g200);padding:24px}
+.card-title{font-size:15px;font-weight:700;color:var(--dk);margin:0 0 2px}
+.card-sub{font-size:12px;color:var(--g500);margin:0 0 16px}
+.kpi{background:var(--wh);border-radius:12px;border:1px solid var(--g200);padding:18px 20px}
+.kpi.sm{padding:14px 16px}
+.kpi-label{font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1.2px;font-weight:500;margin-bottom:6px}
+.kpi-value{font-size:26px;font-weight:700;color:var(--dk);letter-spacing:-0.5px}
+.kpi.sm .kpi-value{font-size:20px}
+
+/* Pills */
+.pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.pill-green{color:var(--grn);background:var(--grnL)}.pill-red{color:var(--red);background:var(--redL)}
+.pill-amber{color:var(--amb);background:var(--ambL)}.pill-blue{color:var(--blu);background:var(--bluL)}
+.pill-gray{color:var(--g500);background:var(--g100)}
+
+/* Status Badges */
+.status{padding:4px 12px;border-radius:20px;font-size:11px;font-weight:600}
+.status-optimal{background:var(--grnL);color:var(--grn)}.status-underpriced{background:var(--ambL);color:var(--amb)}.status-overpriced{background:var(--redL);color:var(--red)}
+
+/* Buttons */
+.btn{padding:8px 18px;border-radius:8px;border:1px solid var(--g200);background:var(--wh);color:var(--g700);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s;display:inline-flex;align-items:center;gap:6px}
+.btn:hover{background:var(--g50)}
+.btn-sm{padding:5px 12px;font-size:12px}
+.btn-primary{background:var(--red);color:#fff;border:none}.btn-primary:hover{background:var(--redH)}
+
+/* Grids */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+.mb-16{margin-bottom:16px}.mb-20{margin-bottom:20px}.mb-24{margin-bottom:24px}
+
+/* Page Header */
+.page-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:24px}
+.page-header h1{font-size:24px;font-weight:700;color:var(--dk);letter-spacing:-0.3px}
+.page-header p{font-size:13px;color:var(--g500);margin-top:4px}
+
+/* Tables */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;padding:8px 10px;font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1px;font-weight:500;border-bottom:1px solid var(--g200)}
+.data-table td{padding:10px;border-bottom:1px solid var(--g100);font-size:13px;vertical-align:middle}
+.data-table tbody tr:hover{background:var(--g50)}
+
+/* Toggle */
+.toggle{width:44px;height:24px;border-radius:12px;cursor:pointer;transition:all .25s;background:var(--g300);position:relative;flex-shrink:0}
+.toggle.on{background:var(--red)}
+.toggle-thumb{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left .25s;box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.toggle.on .toggle-thumb{left:23px}
+
+/* Tabs */
+.tab-bar{display:flex;gap:2px;background:var(--g100);border-radius:10px;padding:3px;margin-bottom:16px}
+.tab-btn{flex:1;padding:8px 14px;border-radius:8px;border:none;cursor:pointer;font-family:inherit;font-size:12px;font-weight:500;transition:all .2s;background:transparent;color:var(--g500)}
+.tab-btn.active{background:var(--wh);color:var(--dk);font-weight:700;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+
+/* Conf bar */
+.conf-bar{display:flex;align-items:center;gap:6px}
+.conf-track{width:50px;height:4px;background:var(--g100);border-radius:2px;overflow:hidden}
+.conf-fill{height:100%;border-radius:2px}
+
+/* Bar chart */
+.bar-chart{display:flex;align-items:flex-end;gap:6px}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar-val{font-size:10px;font-weight:600;color:var(--g500)}
+.bar-fill{width:100%;border-radius:4px 4px 0 0;transition:height .5s;min-height:3px}
+.bar-label{font-size:10px;color:var(--g500)}
+
+/* Heat cell */
+.heat-cell{width:44px;height:32px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600}
+
+/* Editable price */
+.edit-price{display:flex;align-items:center;gap:5px}
+.edit-price .value{font-size:15px;font-weight:700}
+.edit-price .value.custom{color:var(--blu)}
+.edit-price .value.ai{color:var(--grn)}
+.edit-btn{background:none;border:1px solid var(--g300);border-radius:4px;padding:2px;cursor:pointer;color:var(--g500);display:flex;transition:all .2s}
+.edit-btn:hover{border-color:var(--red);color:var(--red)}
+.custom-tag{font-size:9px;color:var(--blu);font-weight:700;background:var(--bluL);padding:2px 5px;border-radius:8px}
+.edit-input{width:64px;padding:3px 6px;font-size:14px;font-weight:700;border:2px solid var(--red);border-radius:6px;outline:none;font-family:inherit;color:var(--dk)}
+.edit-save{background:var(--grn);border:none;border-radius:4px;padding:3px;cursor:pointer;color:#fff;display:flex}
+.edit-cancel{background:var(--g300);border:none;border-radius:4px;padding:3px;cursor:pointer;color:#fff;display:flex}
+.reset-link{font-size:10px;color:var(--g500);background:none;border:none;cursor:pointer;text-decoration:underline;display:block;margin-top:2px;font-family:inherit;padding:0}
+
+/* Quick nav items */
+.quick-nav{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:10px;cursor:pointer;transition:all .2s;border:1px solid transparent;margin-bottom:4px}
+.quick-nav:hover{background:var(--redBg);border-color:var(--redL)}
+
+/* Insight card */
+.insight-card{border-left:4px solid;padding:20px 24px}
+.insight-card.critical{border-color:var(--red)}.insight-card.high{border-color:#E85D04}
+.insight-card.medium{border-color:var(--amb)}.insight-card.low{border-color:var(--blu)}
+
+/* Parity channel */
+.parity-chan{flex:1;padding:10px 12px;border-radius:8px;background:var(--g50);border:1px solid var(--g200);text-align:center}
+.parity-chan.lowest{background:var(--grnL);border-color:rgba(0,135,90,.2)}
+
+/* Tooltip */
+.tooltip-wrap{position:relative;display:inline-flex;cursor:help}
+.tooltip-box{position:absolute;bottom:calc(100% + 6px);left:50%;transform:translateX(-50%);background:var(--dk);color:#fff;padding:6px 10px;border-radius:6px;font-size:11px;white-space:nowrap;z-index:100;pointer-events:none;display:none}
+.tooltip-wrap:hover .tooltip-box{display:block}
+
+/* Price range bar */
+.price-range{position:relative;height:24px;border-radius:12px;overflow:visible;background:linear-gradient(90deg,var(--grnL),var(--ambL),var(--redL))}
+.price-marker{position:absolute;top:-2px;transform:translateX(-50%);width:18px;height:28px;border-radius:6px;background:var(--red);border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.2);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff}
+
+/* Animations */
+@keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.page-content{animation:fadeIn .35s ease-out}
+
+/* Hidden pages */
+.page{display:none}
+.page.active{display:block}
+</style>
+</head>
+<body>
+
+<!-- ═══ SIDEBAR ═══ -->
+<aside class="sidebar">
+  <div class="logo-wrap">
+    <div class="logo-mark">G</div>
+    <div>
+      <div class="logo-text">GetYourGuide</div>
+      <div class="logo-sub">Pricing Platform</div>
+    </div>
+  </div>
+  <nav id="nav">
+    <!-- ANALYTICS -->
+    <div class="nav-section">
+      <div class="nav-label">ANALYTICS</div>
+      <div class="nav-item active" data-page="overview">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        Overview
+      </div>
+      <div class="nav-item" data-page="pricing">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+        Price Setup
+      </div>
+      <div class="nav-item" data-page="dynamic">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M17 7h4v4"/></svg>
+        Dynamic Pricing
+      </div>
+      <div class="nav-item" data-page="deals">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><circle cx="7" cy="7" r="1" fill="currentColor"/></svg>
+        Deals & Promos
+      </div>
+    </div>
+    <!-- INTELLIGENCE -->
+    <div class="nav-section">
+      <div class="nav-label">INTELLIGENCE</div>
+      <div class="nav-item" data-page="yield">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 3v18"/></svg>
+        Yield & Revenue
+      </div>
+      <div class="nav-item" data-page="bench">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M18 20V10M12 20V4M6 20v-6"/></svg>
+        Benchmarking
+      </div>
+      <div class="nav-item" data-page="ai">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14l-5-4.87 6.91-1.01L12 2z"/></svg>
+        AI Insights
+      </div>
+    </div>
+    <!-- OPERATIONS -->
+    <div class="nav-section">
+      <div class="nav-label">OPERATIONS</div>
+      <div class="nav-item" data-page="payout">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg>
+        Payouts
+      </div>
+      <div class="nav-item" data-page="parity">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/></svg>
+        Price Parity
+      </div>
+      <div class="nav-item" data-page="ux">
+        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.7" viewBox="0 0 24 24"><rect x="5" y="2" width="14" height="20" rx="2"/><circle cx="12" cy="18" r="1"/></svg>
+        Tools & Settings
+      </div>
+    </div>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="supplier-row">
+      <div class="supplier-avatar">RC</div>
+      <div>
+        <div style="font-size:12px;font-weight:600;color:var(--dk)">Roma Colosseum Tours</div>
+        <div style="font-size:10px;color:var(--g500)">Premium Supplier</div>
+      </div>
+    </div>
+  </div>
+</aside>
+
+<!-- ═══ MAIN CONTENT ═══ -->
+<main class="main" id="mainContent"></main>
+
+<script>
+// ═══ DATA ═══════════════════════════════════════════════════════
+const EXP = [
+  { id:1, name:"Colosseum Skip-the-Line", cat:"Walking Tour · 3h", icon:"🏛️", cur:54, sug:59, book30:342, rating:4.8, conf:92, cap:20, filled:16, adult:54, child:32, senior:45, group:48 },
+  { id:2, name:"Colosseum Night Tour", cat:"Premium · 2.5h", icon:"🌙", cur:72, sug:84, book30:186, rating:4.9, conf:88, cap:15, filled:13, adult:72, child:45, senior:60, group:65 },
+  { id:3, name:"Trastevere Food Walk", cat:"Food & Drink · 3.5h", icon:"🍕", cur:49, sug:49, book30:278, rating:4.7, conf:95, cap:12, filled:9, adult:49, child:30, senior:42, group:44 },
+  { id:4, name:"Vatican Museums Express", cat:"Skip-the-line · 2h", icon:"🎨", cur:89, sug:82, book30:156, rating:4.5, conf:76, cap:25, filled:14, adult:89, child:55, senior:75, group:80 },
+  { id:5, name:"Best of Rome Walking Tour", cat:"Walking Tour · 4h", icon:"⛲", cur:38, sug:42, book30:412, rating:4.6, conf:84, cap:18, filled:15, adult:38, child:22, senior:32, group:34 },
+  { id:6, name:"Underground Catacombs", cat:"History · 2h", icon:"💀", cur:62, sug:68, book30:98, rating:4.4, conf:80, cap:10, filled:7, adult:62, child:38, senior:52, group:56 },
+];
+const COMP = [
+  { name:"Walks of Italy", prices:{1:62,2:88,3:52,4:95,5:44,6:70}},
+  { name:"Dark Rome Tours", prices:{1:58,2:82,3:55,4:85,5:40,6:65}},
+  { name:"City Wonders", prices:{1:55,2:79,3:48,4:92,5:42,6:68}},
+];
+const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+const DEM_MONTH = [65,58,72,95,105,118,130,128,110,92,70,60];
+const WEEKDAYS = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+const DEM_WEEK = [70,68,72,78,95,130,120];
+const PAYOUTS = [
+  { date:"Mar 15, 2026", amount:12840, bookings:186, status:"scheduled" },
+  { date:"Mar 01, 2026", amount:11620, bookings:168, status:"paid" },
+  { date:"Feb 15, 2026", amount:10380, bookings:152, status:"paid" },
+  { date:"Feb 01, 2026", amount:9840, bookings:144, status:"paid" },
+];
+const LOG = [
+  { date:"Mar 01", action:"AI suggestion applied", detail:"Colosseum Skip-the-Line: €52 → €54", impact:"+3.7%" },
+  { date:"Feb 26", action:"Seasonal rule triggered", detail:"All products +8% for Carnival week", impact:"+€2,340" },
+  { date:"Feb 20", action:"Manual override", detail:"Vatican Express: €92 → €89", impact:"-3.3%" },
+  { date:"Feb 14", action:"Last-minute discount", detail:"Food Walk: 12% off, filled 8 slots", impact:"+€392" },
+  { date:"Feb 10", action:"Bulk price update", detail:"CSV import: 6 products updated", impact:"Neutral" },
+];
+
+// ═══ STATE ═══════════════════════════════════════════════════════
+let state = {
+  page: "overview",
+  overrides: {},
+  applied: new Set(),
+  catTab: "all",
+  rules: { seasonal:true, dayOfWeek:true, earlyBird:true, lastMin:false, capacity:true, events:false },
+  simPrice: 54,
+};
+
+// ═══ HELPERS ═════════════════════════════════════════════════════
+const fmt = n => "€" + Math.round(n).toLocaleString("de-DE");
+const fmtD = n => "€" + n.toFixed(2).replace(".",",");
+const getStatus = (cur, sug) => { const d = sug - cur; return Math.abs(d) < 1 ? "optimal" : d > 0 ? "underpriced" : "overpriced"; };
+const pillClass = v => v.startsWith("+") ? "pill-green" : v.startsWith("-") ? "pill-red" : "pill-gray";
+const confColor = v => v >= 85 ? "var(--grn)" : v >= 70 ? "var(--amb)" : "var(--red)";
+
+function makeBar(data, labels, height, color, highlightIdx, maxOverride) {
+  const mx = maxOverride || Math.max(...data);
+  return `<div class="bar-chart" style="height:${height}px">${data.map((v,i) => 
+    `<div class="bar-col"><span class="bar-val">${v}</span><div class="bar-fill" style="height:${(v/mx)*(height-30)}px;background:${i===highlightIdx?color:color+'55'}"></div>${labels?`<span class="bar-label">${labels[i]}</span>`:''}</div>`
+  ).join('')}</div>`;
+}
+
+function makeConfBar(v) {
+  return `<div class="conf-bar"><div class="conf-track"><div class="conf-fill" style="width:${v}%;background:${confColor(v)}"></div></div><span style="font-size:11px;color:var(--g500)">${v}%</span></div>`;
+}
+
+function makeKPI(label, value, change, type, small) {
+  const colors = { up: { c: "var(--grn)", bg: "var(--grnL)" }, down: { c: "var(--red)", bg: "var(--redL)" }, amber: { c: "var(--amb)", bg: "var(--ambL)" }};
+  const t = colors[type] || colors.up;
+  return `<div class="kpi${small?' sm':''}"><div class="kpi-label">${label}</div><div class="kpi-value">${value}</div>${change?`<div style="margin-top:6px"><span class="pill" style="color:${t.c};background:${t.bg}">${change}</span></div>`:''}</div>`;
+}
+
+// ═══ PAGE RENDERERS ═════════════════════════════════════════════
+
+function renderOverview() {
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Overview</h1><p>Your pricing health at a glance</p></div></div>
+    <div class="grid-4 mb-20">
+      ${makeKPI("Revenue (30d)","€47,820","↑ 12.3% MoM","up")}
+      ${makeKPI("Avg Booking Value","€68.50","↑ 4.7%","up")}
+      ${makeKPI("Pricing Health","92/100","↑ 8 pts","up")}
+      ${makeKPI("Missed Revenue","€3,140","Capture available","down")}
+    </div>
+    <div class="grid-2 mb-16">
+      <div class="card">
+        <div class="card-title">Quick Navigation</div>
+        <p class="card-sub">Jump to any section</p>
+        ${[
+          { id:"pricing", icon:"💰", l:"Price Setup & Management", d:"Multi-category pricing, bulk editing, API import" },
+          { id:"dynamic", icon:"📈", l:"Dynamic & Seasonal Pricing", d:"Calendar pricing, capacity triggers, early-bird" },
+          { id:"deals", icon:"🏷️", l:"Deals & Promotions", d:"Flash sales, group discounts, coupon codes" },
+          { id:"yield", icon:"📊", l:"Yield & Revenue Intelligence", d:"Demand forecasts, RevPAS, conversion analytics" },
+          { id:"bench", icon:"🏆", l:"Market Benchmarking", d:"Competitor pricing, GYG recommended price" },
+          { id:"payout", icon:"💳", l:"Payout & Commission", d:"Net payout calculator, commission breakdown" },
+          { id:"parity", icon:"🌐", l:"Price Parity", d:"Multi-channel comparison, parity alerts" },
+          { id:"ux", icon:"📱", l:"Tools & Settings", d:"CSV import/export, audit log, tooltips" },
+        ].map(n => `<div class="quick-nav" onclick="goTo('${n.id}')">
+          <span style="font-size:22px">${n.icon}</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--dk)">${n.l}</div><div style="font-size:11px;color:var(--g500)">${n.d}</div></div>
+          <span style="color:var(--g400)">›</span>
+        </div>`).join('')}
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <div class="card">
+          <div class="card-title">Revenue Trend (8 Weeks)</div><p class="card-sub">Weekly revenue</p>
+          ${makeBar([32000,35400,33800,41200,38600,44100,47820,46500],["W1","W2","W3","W4","W5","W6","W7","W8"],140,"var(--red)",6)}
+        </div>
+        <div class="card">
+          <div class="card-title">Recent Changes</div><p class="card-sub">Last pricing actions</p>
+          ${LOG.slice(0,4).map((c,i) => `<div style="display:flex;gap:10px;padding:8px 0;${i<3?'border-bottom:1px solid var(--g100)':''}">
+            <span style="font-size:11px;color:var(--g500);min-width:52px">${c.date}</span>
+            <div style="flex:1"><div style="font-size:12px;font-weight:600;color:var(--dk)">${c.action}</div><div style="font-size:11px;color:var(--g500)">${c.detail}</div></div>
+            <span class="pill ${pillClass(c.impact)}">${c.impact}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderPricing() {
+  const tab = state.catTab;
+  return `<div class="page-content">
+    <div class="page-header">
+      <div><h1>Price Setup & Management</h1><p>Multi-category pricing, bulk editing, manual override</p></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm">📥 CSV Export</button>
+        <button class="btn btn-sm">Bulk Edit</button>
+        <button class="btn btn-sm btn-primary" onclick="applyAll()">Apply All AI Suggestions</button>
+      </div>
+    </div>
+    <div class="grid-4 mb-20">
+      ${makeKPI("Revenue (30d)","€47,820","↑ 12.3% MoM","up",true)}
+      ${makeKPI("Avg Booking Value","€68.50","↑ 4.7%","up",true)}
+      ${makeKPI("Price Competitiveness","92/100","↑ 8 pts","up",true)}
+      ${makeKPI("Missed Revenue","€3,140","Could be captured","down",true)}
+    </div>
+    <div class="card mb-16">
+      <div class="card-title">Experience Pricing Table</div>
+      <p class="card-sub">Click ✏️ to manually override any AI suggestion · Toggle category tabs</p>
+      <div class="tab-bar">
+        ${["all","adult","child","senior","group"].map(t => `<button class="tab-btn${tab===t?' active':''}" onclick="state.catTab='${t}';render()">${t==='all'?'All Prices':t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('')}
+      </div>
+      <table class="data-table">
+        <thead><tr><th>Experience</th><th>${tab==='all'?'Current':tab.charAt(0).toUpperCase()+tab.slice(1)+' Price'}</th><th>AI Suggested</th><th>Status</th><th>Confidence</th><th>Bookings</th><th>Rating</th><th></th></tr></thead>
+        <tbody>
+          ${EXP.map(e => {
+            const dp = tab === 'all' ? e.cur : e[tab];
+            const ovr = state.overrides[e.id];
+            const np = ovr !== undefined ? ovr : e.sug;
+            const st = getStatus(dp, np);
+            const done = state.applied.has(e.id);
+            const isCustom = ovr !== undefined;
+            return `<tr>
+              <td><div style="display:flex;align-items:center;gap:10px"><div style="width:36px;height:36px;border-radius:8px;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:17px">${e.icon}</div><div><div style="font-size:13px;font-weight:600;color:var(--dk)">${e.name}</div><div style="font-size:11px;color:var(--g500)">${e.cat}</div></div></div></td>
+              <td style="font-size:14px;font-weight:600;color:var(--g700)">${fmtD(dp)}</td>
+              <td>
+                <div class="edit-price" id="ep-${e.id}">
+                  <span class="value ${isCustom?'custom':'ai'}">${fmtD(np)}</span>
+                  <button class="edit-btn" onclick="startEdit(${e.id},${np})">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                  </button>
+                  ${isCustom?'<span class="custom-tag">CUSTOM</span>':''}
+                </div>
+                ${isCustom?`<button class="reset-link" onclick="resetPrice(${e.id})">Reset → ${fmtD(e.sug)}</button>`:''}
+              </td>
+              <td><span class="status status-${st}">${st.charAt(0).toUpperCase()+st.slice(1)}</span></td>
+              <td>${makeConfBar(e.conf)}</td>
+              <td style="font-weight:600">${e.book30}</td>
+              <td style="color:var(--g700)">⭐ ${e.rating}</td>
+              <td>${st!=='optimal'&&!done?`<button class="btn btn-sm btn-primary" onclick="applyOne(${e.id})">Apply</button>`:done?'<span class="pill pill-green">✓ Applied</span>':'<span style="color:var(--g400)">—</span>'}</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    </div>
+    ${renderRevenueSim()}
+  </div>`;
+}
+
+function renderRevenueSim() {
+  let curTot = 0, projTot = 0;
+  const rows = EXP.map(e => {
+    const np = state.overrides[e.id] !== undefined ? state.overrides[e.id] : e.sug;
+    const el = np > e.cur ? -0.3 : np < e.cur ? 0.15 : 0;
+    const pd = (np - e.cur) / e.cur;
+    const pb = Math.round(e.book30 * (1 + pd * el));
+    const cr = e.cur * e.book30;
+    const pr = np * pb;
+    curTot += cr; projTot += pr;
+    return { ...e, np, pb, cr, pr };
+  });
+  const delta = projTot - curTot;
+  const pos = delta >= 0;
+  const pctC = ((delta / curTot) * 100).toFixed(1);
+
+  return `<div class="card">
+    <div class="card-title">💡 Revenue Impact Simulator</div>
+    <p class="card-sub">Projected 30-day impact · Accounts for demand elasticity</p>
+    <div class="grid-3 mb-20">
+      <div style="background:var(--g50);border-radius:10px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1px;font-weight:500">Current Revenue</div>
+        <div style="font-size:22px;font-weight:700;color:var(--dk);margin-top:4px">${fmt(curTot)}</div>
+      </div>
+      <div style="background:var(--g50);border-radius:10px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1px;font-weight:500">Projected Revenue</div>
+        <div style="font-size:22px;font-weight:700;color:${pos?'var(--grn)':'var(--red)'};margin-top:4px">${fmt(Math.round(projTot))}</div>
+      </div>
+      <div style="background:${pos?'var(--grnL)':'var(--redL)'};border-radius:10px;padding:16px;text-align:center">
+        <div style="font-size:10px;color:${pos?'var(--grn)':'var(--red)'};text-transform:uppercase;letter-spacing:1px;font-weight:600">Net Impact</div>
+        <div style="font-size:22px;font-weight:700;color:${pos?'var(--grn)':'var(--red)'};margin-top:4px">${pos?'+':''}${fmt(Math.round(delta))}</div>
+        <div style="font-size:11px;color:${pos?'var(--grn)':'var(--red)'}">${pos?'+':''}${pctC}% monthly</div>
+      </div>
+    </div>
+    ${rows.map(r => {
+      const d = r.pr - r.cr;
+      return `<div style="display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid var(--g100)">
+        <span style="font-size:16px">${r.icon}</span>
+        <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;color:var(--dk);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.name}</div><div style="font-size:11px;color:var(--g500)">${fmtD(r.cur)} → ${fmtD(r.np)} · ${r.book30} → ${r.pb} bookings</div></div>
+        <div style="width:90px;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:${Math.min(Math.abs(d)/50,100)}%;height:100%;border-radius:3px;background:${d>=0?'var(--grn)':'var(--red)'}"></div></div>
+        <div style="width:70px;text-align:right;font-size:13px;font-weight:700;color:${d>=0?'var(--grn)':'var(--red)'}">${d>=0?'+':''}${fmt(Math.round(d))}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function renderDynamic() {
+  const heatData = [[65,70,72,78],[58,62,68,75],[72,78,82,88],[95,102,108,115],[105,112,118,125],[118,122,128,130]];
+  const heatColor = v => { const i = v/135; return i > 0.85 ? 'var(--red)' : i > 0.65 ? 'var(--amb)' : i > 0.4 ? '#FCD34D' : 'var(--grnL)'; };
+  const heatText = v => v/135 > 0.65 ? '#fff' : 'var(--dk)';
+
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Dynamic & Seasonal Pricing</h1><p>Automated rules that adjust pricing based on demand signals</p></div></div>
+    <div class="grid-2 mb-16">
+      <div class="card"><div class="card-title">Seasonal Demand Calendar</div><p class="card-sub">Monthly demand index · 100 = baseline</p>
+        ${makeBar(DEM_MONTH, MONTHS, 160, "var(--red)", 6, 140)}
+        <div style="margin-top:10px;display:flex;gap:8px;justify-content:center">
+          <span class="pill pill-green">Low (&lt;80)</span><span class="pill pill-amber">Shoulder (80-100)</span><span class="pill pill-red">Peak (&gt;100)</span>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Day-of-Week Demand</div><p class="card-sub">Relative demand by weekday</p>
+        ${makeBar(DEM_WEEK, WEEKDAYS, 160, "var(--blu)", 5, 140)}
+      </div>
+    </div>
+    <div class="grid-2 mb-16">
+      <div class="card"><div class="card-title">🔥 Demand Heatmap</div><p class="card-sub">Next 6 months × week blocks</p>
+        <div style="display:grid;grid-template-columns:60px repeat(4,1fr);gap:4px">
+          <div></div>${["Week 1","Week 2","Week 3","Week 4"].map(w => `<div style="font-size:10px;color:var(--g500);text-align:center;font-weight:500">${w}</div>`).join('')}
+          ${heatData.map((row,ri) => `<div style="font-size:11px;font-weight:600;color:var(--g700);display:flex;align-items:center">${MONTHS[ri+2]}</div>${row.map(v => `<div class="heat-cell" style="background:${heatColor(v)};color:${heatText(v)}">${v}</div>`).join('')}`).join('')}
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Capacity-Triggered Pricing</div><p class="card-sub">Prices increase as slots fill</p>
+        ${EXP.slice(0,4).map(e => {
+          const p = Math.round((e.filled/e.cap)*100);
+          const tier = p >= 80 ? "+20%" : p >= 50 ? "+10%" : "Base";
+          const tc = p >= 80 ? "red" : p >= 50 ? "amber" : "green";
+          return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--g100)">
+            <span>${e.icon}</span><div style="flex:1;font-size:12px;font-weight:600;color:var(--dk)">${e.name}</div>
+            <div style="width:80px;height:6px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:${p}%;height:100%;border-radius:3px;background:var(--${tc})"></div></div>
+            <span style="font-size:11px;font-weight:600;color:var(--g700);width:35px">${p}%</span>
+            <span class="pill pill-${tc}">${tier}</span>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Pricing Rules Engine</div><p class="card-sub">Toggle rules on/off · Each rule runs automatically</p>
+      <div class="grid-2" style="gap:10px">
+        ${[
+          { key:"seasonal",icon:"📅",name:"Seasonal Pricing",desc:"Auto-adjust 10-25% based on seasonal demand calendar" },
+          { key:"dayOfWeek",icon:"📆",name:"Day-of-Week Pricing",desc:"Weekend premium +15%, early morning -10%" },
+          { key:"earlyBird",icon:"🐦",name:"Early Bird Discount",desc:"7% off for bookings 14+ days in advance" },
+          { key:"lastMin",icon:"⏰",name:"Last-Minute Pricing",desc:"Raise +12% within 24h or drop 15% to fill slots" },
+          { key:"capacity",icon:"📈",name:"Capacity Trigger",desc:"Price rises at 50% and 80% capacity thresholds" },
+          { key:"events",icon:"🎉",name:"Event Calendar",desc:"Flag holidays & festivals with suggested uplifts" },
+        ].map(r => `<div style="display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--g50);border-radius:10px">
+          <span style="font-size:20px">${r.icon}</span>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--dk)">${r.name}</div><div style="font-size:11px;color:var(--g500);margin-top:1px">${r.desc}</div></div>
+          <div class="toggle${state.rules[r.key]?' on':''}" onclick="toggleRule('${r.key}')"><div class="toggle-thumb"></div></div>
+        </div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderDeals() {
+  const deals = [
+    { name:"Easter Flash Sale", product:"All Products", disc:"15%", period:"Mar 28 → Apr 5", status:"scheduled" },
+    { name:"Family Bundle", product:"Colosseum + Vatican", disc:"€25 off", period:"Active → Apr 30", status:"active" },
+    { name:"Group Discount", product:"All Products", disc:"10% (6+ pax)", period:"Active → Ongoing", status:"active" },
+    { name:"Influencer Code", product:"Night Tour", disc:"20%", period:"Active → Mar 31", status:"active" },
+  ];
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Deals & Promotions</h1><p>Controlled discounting with scheduling, group rules, and coupon codes</p></div><button class="btn btn-sm btn-primary">+ Create New Deal</button></div>
+    <div class="grid-4 mb-20">
+      ${makeKPI("Active Deals","3","2 more vs last month","up",true)}
+      ${makeKPI("Revenue from Deals","€4,210","↑ 22.5%","up",true)}
+      ${makeKPI("Conversion Lift","+18%","vs. non-deal bookings","up",true)}
+      ${makeKPI("Avg Discount","14.2%","Within target","up",true)}
+    </div>
+    <div class="card mb-16"><div class="card-title">Active & Scheduled Deals</div><p class="card-sub"></p>
+      <table class="data-table"><thead><tr><th>Deal Name</th><th>Product</th><th>Discount</th><th>Period</th><th>Status</th><th></th></tr></thead>
+      <tbody>${deals.map(d => `<tr><td style="font-weight:600">${d.name}</td><td style="color:var(--g700)">${d.product}</td><td><span class="pill pill-red">${d.disc}</span></td><td style="font-size:12px;color:var(--g500)">${d.period}</td><td><span class="pill pill-${d.status==='active'?'green':'amber'}">${d.status}</span></td><td><button class="btn btn-sm">Edit</button></td></tr>`).join('')}</tbody></table>
+    </div>
+    <div class="grid-2">
+      <div class="card"><div class="card-title">Group Discount Tiers</div><p class="card-sub">Automatic by party size</p>
+        ${[{m:4,p:"5%"},{m:6,p:"10%"},{m:10,p:"15%"},{m:15,p:"20%"}].map(t => `<div style="display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--g100)"><span style="font-size:13px;color:var(--g700)">${t.m}+ guests</span><span class="pill pill-green">${t.p} off</span></div>`).join('')}
+      </div>
+      <div class="card"><div class="card-title">Coupon Codes</div><p class="card-sub">Private codes for partners & repeats</p>
+        ${[{c:"ROME2026",u:42,d:"10%"},{c:"INFLUENCER-SARA",u:18,d:"20%"},{c:"CORPORATE-ABC",u:8,d:"12%"}].map(c => `<div style="display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:1px solid var(--g100)"><code style="background:var(--g100);padding:3px 8px;border-radius:6px;font-size:12px;font-weight:700;font-family:monospace">${c.c}</code><div style="flex:1;font-size:12px;color:var(--g500)">${c.u} uses</div><span class="pill pill-blue">${c.d}</span></div>`).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderYield() {
+  const rp = EXP.map(e => ({...e, rv: Math.round((e.cur*e.book30)/(e.cap*30)*100)/100})).sort((a,b)=>b.rv-a.rv);
+  const conv = [{p:"€30-39",c:4.8},{p:"€40-49",c:4.2},{p:"€50-59",c:3.7},{p:"€60-69",c:3.1},{p:"€70-79",c:2.4},{p:"€80-89",c:1.9},{p:"€90+",c:1.2}];
+  const mx = 4.8;
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Yield & Revenue Intelligence</h1><p>Demand forecasts, RevPAS tracking, conversion analytics</p></div></div>
+    <div class="grid-4 mb-20">
+      ${makeKPI("Avg RevPAS","€3.42","↑ 11%","up",true)}
+      ${makeKPI("Booking Pace","+8.3%","vs. last year","up",true)}
+      ${makeKPI("Best Converter","€38-€49","4.2-4.8% CVR","up",true)}
+      ${makeKPI("Pricing Health","92/100","Top 10% in Rome","up",true)}
+    </div>
+    <div class="grid-2 mb-16">
+      <div class="card"><div class="card-title">Revenue per Available Slot (RevPAS)</div><p class="card-sub">Total revenue ÷ (capacity × days)</p>
+        ${rp.map(e => `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--g100)"><span>${e.icon}</span><div style="flex:1;font-size:12px;font-weight:600;color:var(--dk)">${e.name}</div><div style="width:80px;height:5px;background:var(--g100);border-radius:3px;overflow:hidden"><div style="width:${(e.rv/5)*100}%;height:100%;border-radius:3px;background:var(--grn)"></div></div><span style="font-size:13px;font-weight:700;color:var(--dk);width:50px;text-align:right">${fmtD(e.rv)}</span></div>`).join('')}
+      </div>
+      <div class="card"><div class="card-title">Conversion Rate by Price Point</div><p class="card-sub">Which prices convert views to bookings</p>
+        ${conv.map(c => {
+          const col = c.c >= 3.5 ? 'var(--grn)' : c.c >= 2.5 ? 'var(--amb)' : 'var(--red)';
+          return `<div style="display:flex;align-items:center;gap:10px;padding:6px 0"><span style="font-size:12px;font-weight:500;color:var(--g700);width:55px">${c.p}</span><div style="flex:1;height:18px;background:var(--g100);border-radius:4px;overflow:hidden"><div style="width:${(c.c/mx)*100}%;height:100%;border-radius:4px;background:${col};display:flex;align-items:center;justify-content:flex-end;padding-right:6px"><span style="font-size:10px;font-weight:700;color:#fff">${c.c}%</span></div></div></div>`;
+        }).join('')}
+      </div>
+    </div>
+    <div class="grid-2-1">
+      <div class="card"><div class="card-title">Booking Pace Tracker</div><p class="card-sub">This year vs. last year</p>
+        <div style="display:flex;gap:20px">
+          <div style="flex:1">${makeBar([28,32,35,42,48,52,58,62],["W1","W2","W3","W4","W5","W6","W7","W8"],130,"var(--red)")}<div style="text-align:center;font-size:11px;color:var(--g500);margin-top:4px">This Year</div></div>
+          <div style="flex:1">${makeBar([25,28,30,36,40,45,50,54],["W1","W2","W3","W4","W5","W6","W7","W8"],130,"var(--g400)")}<div style="text-align:center;font-size:11px;color:var(--g500);margin-top:4px">Last Year</div></div>
+        </div>
+      </div>
+      <div class="card"><div class="card-title">Pricing Health Score</div><p class="card-sub">How competitive?</p>
+        <div style="text-align:center;padding:20px 0">
+          <div style="width:100px;height:100px;border-radius:50%;border:6px solid var(--grn);display:flex;align-items:center;justify-content:center;margin:0 auto 12px"><span style="font-size:32px;font-weight:700;color:var(--grn)">92</span></div>
+          <span class="pill pill-green">Top 10% in Rome Tours</span>
+          <div style="margin-top:12px;font-size:12px;color:var(--g500);line-height:1.6">Your pricing is well-optimized. 2 products could be adjusted for higher conversion.</div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderBench() {
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Market Benchmarking</h1><p>Anonymous competitive context — see where you stand</p></div></div>
+    <div class="grid-3 mb-20">
+      ${makeKPI("Your Avg Price","€60.67","Category median: €62","up",true)}
+      ${makeKPI("Price Position","Mid Band","Well positioned","up",true)}
+      ${makeKPI("Priced to Convert","5 of 6","1 needs attention","down",true)}
+    </div>
+    <div class="card mb-16"><div class="card-title">Category Price Range</div><p class="card-sub">Where you sit vs. similar experiences in Rome (anonymous)</p>
+      ${EXP.map(e => {
+        const cps = COMP.map(c => c.prices[e.id]);
+        const all = [e.cur, ...cps].sort((a,b)=>a-b);
+        const mn = all[0]-5, mx = all[all.length-1]+5, rng = mx-mn;
+        const pos = ((e.cur-mn)/rng)*100;
+        const sig = e.conf >= 85 ? "grn" : e.conf >= 70 ? "amb" : "red";
+        return `<div style="padding:12px 0;border-bottom:1px solid var(--g100)">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+            <div style="display:flex;align-items:center;gap:8px"><span>${e.icon}</span><span style="font-size:13px;font-weight:600;color:var(--dk)">${e.name}</span></div>
+            <div style="display:flex;align-items:center;gap:8px"><span style="font-size:12px;color:var(--g500)">GYG Recommended: <strong style="color:var(--grn)">${fmtD(e.sug)}</strong></span><div style="width:10px;height:10px;border-radius:50%;background:var(--${sig})"></div></div>
+          </div>
+          <div class="price-range"><div class="price-marker" style="left:${pos}%">YOU</div><span style="position:absolute;left:4px;top:5px;font-size:10px;font-weight:600;color:var(--grn)">${fmtD(mn+5)}</span><span style="position:absolute;right:4px;top:5px;font-size:10px;font-weight:600;color:var(--red)">${fmtD(mx-5)}</span></div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="card"><div class="card-title">Priced-to-Convert Signal</div><p class="card-sub">🟢 Converts well · 🟡 May underperform · 🔴 Needs adjustment</p>
+      <div class="grid-3" style="gap:12px">
+        ${EXP.map(e => {
+          const s = e.conf >= 85 ? "green" : e.conf >= 70 ? "amber" : "red";
+          const bc = s==="green"?"var(--grn)":s==="amber"?"var(--amb)":"var(--red)";
+          const bg = s==="green"?"var(--grnL)":s==="amber"?"var(--ambL)":"var(--redL)";
+          const msg = s==="green"?"✅ Well-priced for conversion":s==="amber"?"⚠️ Slightly off-optimal":"🔴 Adjust to improve bookings";
+          return `<div style="padding:14px;border-radius:10px;border:1px solid ${bc}33;background:${bg}">
+            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px"><span>${e.icon}</span><span style="font-size:12px;font-weight:600;color:var(--dk)">${e.name}</span></div>
+            <div style="font-size:20px;font-weight:700;color:var(--dk)">${fmtD(e.cur)}</div>
+            <div style="font-size:11px;color:var(--g500);margin-top:4px">${msg}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderAI() {
+  const insights = [
+    { lv:"critical",tag:"Revenue Opportunity",title:"Night Tour is 18% below market",text:"Your Colosseum Night Tour at €72 is significantly below competitor average of €83. Raising to €84 could add ~€1,800/month.",act:"Go to Pricing →",pg:"pricing",imp:"+€1,800/mo",conf:92 },
+    { lv:"high",tag:"Seasonal Alert",title:"Easter demand surge incoming",text:"Easter week demand is projected +42% above baseline. Enabling seasonal pricing rules now could capture €2,340 in additional revenue.",act:"Configure Dynamic Rules →",pg:"dynamic",imp:"+€2,340",conf:88 },
+    { lv:"high",tag:"Underpricing Alert",title:"Walking Tour leaving money on the table",text:"Best of Rome Walking Tour at €38 is the lowest in its category. Competitors average €42. A €4 increase would yield +€1,648/mo.",act:"Adjust Price →",pg:"pricing",imp:"+€1,648/mo",conf:84 },
+    { lv:"medium",tag:"Conversion Insight",title:"Vatican Express overpriced vs. data",text:"At €89, Vatican Express has 1.9% CVR. Dropping to €82 could lift to 2.8%, netting +€820/mo despite lower price.",act:"Review →",pg:"pricing",imp:"+€820/mo",conf:76 },
+    { lv:"medium",tag:"Promotion Idea",title:"Weekday mornings underperforming",text:"Mon-Wed 9AM slots average 52% fill. A 10% early-bird discount could fill 15 more slots/week (+€2,940/mo).",act:"Create Promotion →",pg:"deals",imp:"+€2,940/mo",conf:80 },
+    { lv:"low",tag:"Parity Warning",title:"Viator price is €3 lower on Food Walk",text:"Trastevere Food Walk is €49 on GYG but €46 on Viator. This gap may hurt conversion.",act:"Check Parity →",pg:"parity",imp:"CVR impact",conf:70 },
+    { lv:"low",tag:"Capacity Optimization",title:"Catacombs tour has room to grow",text:"Underground Catacombs at 70% fill with 4.4★. A 5% reduction with 'Limited Spots' badging could fill remaining capacity.",act:"Review →",pg:"pricing",imp:"+€580/mo",conf:72 },
+  ];
+  const colors = { critical:"var(--red)", high:"#E85D04", medium:"var(--amb)", low:"var(--blu)" };
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>🧠 AI Pricing Insights</h1><p>Prioritized, actionable recommendations powered by GYG data</p></div></div>
+    <div class="grid-4 mb-20">
+      ${makeKPI("Total Opportunity","€10,128/mo","If all applied","up",true)}
+      ${makeKPI("Critical Actions","1","Act now","down",true)}
+      ${makeKPI("High Priority","2","This week","down",true)}
+      ${makeKPI("Avg Confidence","80.3%","AI model accuracy","up",true)}
+    </div>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      ${insights.map(ins => `<div class="card insight-card ${ins.lv}" style="border-left-color:${colors[ins.lv]}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div style="flex:1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+              <span class="pill" style="color:${colors[ins.lv]};background:${colors[ins.lv]}18">${ins.tag}</span>
+              ${makeConfBar(ins.conf)}
+            </div>
+            <h4 style="font-size:15px;font-weight:700;color:var(--dk);margin:0 0 6px">${ins.title}</h4>
+            <p style="font-size:13px;color:var(--g700);line-height:1.6;margin:0">${ins.text}</p>
+            <button onclick="goTo('${ins.pg}')" style="margin-top:10px;background:none;border:none;color:var(--red);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit">${ins.act}</button>
+          </div>
+          <div style="text-align:right;margin-left:20px;flex-shrink:0">
+            <div style="font-size:22px;font-weight:700;color:${colors[ins.lv]}">${ins.imp}</div>
+            <div style="font-size:11px;color:var(--g500)">Est. impact</div>
+          </div>
+        </div>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function renderPayout() {
+  const sp = state.simPrice;
+  const comm = 0.25;
+  const net = sp * (1 - comm);
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Payout & Commission Transparency</h1><p>Net payout calculator, commission breakdown, payment schedule</p></div></div>
+    <div class="grid-2 mb-16">
+      <div class="card">
+        <div class="card-title">Net Payout Calculator</div><p class="card-sub">Enter a retail price to see what you net</p>
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+          <span style="font-size:13px;font-weight:600;color:var(--g700)">Retail Price:</span>
+          <input type="range" min="20" max="150" value="${sp}" oninput="state.simPrice=+this.value;render()" style="flex:1;accent-color:var(--red)">
+          <span style="font-size:20px;font-weight:700;color:var(--dk);min-width:60px">${fmtD(sp)}</span>
+        </div>
+        <div class="grid-3" style="gap:12px">
+          <div style="background:var(--g50);border-radius:10px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--g500);text-transform:uppercase;letter-spacing:1px">Retail Price</div><div style="font-size:20px;font-weight:700;color:var(--dk);margin-top:4px">${fmtD(sp)}</div></div>
+          <div style="background:var(--redBg);border-radius:10px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--red);text-transform:uppercase;letter-spacing:1px">Commission (25%)</div><div style="font-size:20px;font-weight:700;color:var(--red);margin-top:4px">-${fmtD(sp*comm)}</div></div>
+          <div style="background:var(--grnL);border-radius:10px;padding:14px;text-align:center"><div style="font-size:10px;color:var(--grn);text-transform:uppercase;letter-spacing:1px">Net Payout</div><div style="font-size:20px;font-weight:700;color:var(--grn);margin-top:4px">${fmtD(net)}</div></div>
+        </div>
+        <div style="margin-top:14px;padding:12px;background:var(--bluL);border-radius:8px;font-size:12px;color:var(--blu)">💡 <strong>Scenario:</strong> Raise by €5 to ${fmtD(sp+5)} → net impact <strong>+${fmtD((sp+5)*0.75*0.97-net)}/booking</strong> (with ~3% elasticity)</div>
+      </div>
+      <div class="card"><div class="card-title">Payout Schedule</div><p class="card-sub">Upcoming and recent payments</p>
+        ${PAYOUTS.map(p => `<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--g100)">
+          <div style="width:36px;height:36px;border-radius:10px;background:${p.status==='paid'?'var(--grnL)':'var(--ambL)'};display:flex;align-items:center;justify-content:center;color:${p.status==='paid'?'var(--grn)':'var(--amb)'}">
+            ${p.status==='paid'?'✓':'⏱'}
+          </div>
+          <div style="flex:1"><div style="font-size:13px;font-weight:600;color:var(--dk)">${p.date}</div><div style="font-size:11px;color:var(--g500)">${p.bookings} bookings</div></div>
+          <div style="text-align:right"><div style="font-size:15px;font-weight:700;color:var(--dk)">${fmt(p.amount)}</div><span class="pill pill-${p.status==='paid'?'green':'amber'}">${p.status}</span></div>
+        </div>`).join('')}
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Commission Breakdown per Booking</div><p class="card-sub">Detailed itemization</p>
+      <table class="data-table"><thead><tr><th>Line Item</th><th>Description</th><th>Amount</th></tr></thead>
+      <tbody>
+        ${[
+          { i:"Retail Price",d:"Price charged to customer",a:"€54,00",t:"" },
+          { i:"Base Commission",d:"Standard platform rate",a:"-€10,80",t:"neg" },
+          { i:"Payment Processing",d:"Card processing & fraud",a:"-€1,62",t:"neg" },
+          { i:"Marketing Levy",d:"Shared advertising",a:"-€1,08",t:"neg" },
+          { i:"Net Payout",d:"Deposited to your account",a:"€40,50",t:"pos" },
+        ].map(r => `<tr style="${r.t==='pos'?'background:var(--grnL)':''}"><td style="font-weight:${r.t==='pos'?700:500}">${r.i}</td><td style="color:var(--g500)">${r.d}</td><td style="font-size:14px;font-weight:700;color:${r.t==='neg'?'var(--red)':r.t==='pos'?'var(--grn)':'var(--dk)'}">${r.a}</td></tr>`).join('')}
+      </tbody></table>
+    </div>
+  </div>`;
+}
+
+function renderParity() {
+  const chs = [{n:"GetYourGuide",c:"var(--red)"},{n:"Viator",c:"#2A9D8F"},{n:"Klook",c:"#E76F51"},{n:"Direct Website",c:"var(--blu)"}];
+  const pd = EXP.slice(0,4).map(e => ({...e, ps:{ GetYourGuide:e.cur, Viator:e.cur-Math.round(Math.sin(e.id)*3), Klook:e.cur+Math.round(Math.cos(e.id)*2), "Direct Website":e.cur-Math.round(Math.sin(e.id*2)*2) }}));
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Multi-Channel Price Parity</h1><p>Monitor pricing across GYG, Viator, Klook, and your direct site</p></div></div>
+    <div class="grid-3 mb-20">
+      ${makeKPI("Parity Score","78%","2 alerts active","down",true)}
+      ${makeKPI("Lowest on GYG","2 of 4","Products","up",true)}
+      ${makeKPI("Avg Price Spread","€4.20","Across channels","down",true)}
+    </div>
+    <div class="card mb-16"><div class="card-title">Channel Price Comparison</div><p class="card-sub">⚠️ Alerts when GYG price is higher than other channels</p>
+      <div style="display:flex;gap:16px;margin-bottom:12px">${chs.map(ch => `<div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--g700)"><div style="width:10px;height:10px;border-radius:3px;background:${ch.c}"></div>${ch.n}</div>`).join('')}</div>
+      ${pd.map(e => {
+        const low = Math.min(...Object.values(e.ps));
+        const hasAlert = Object.entries(e.ps).some(([ch,p]) => ch!=='GetYourGuide' && p < e.ps.GetYourGuide);
+        const gygLow = e.ps.GetYourGuide === low;
+        return `<div style="padding:14px 0;border-bottom:1px solid var(--g100)">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span>${e.icon}</span><span style="font-size:13px;font-weight:600;color:var(--dk)">${e.name}</span>
+            ${hasAlert?'<span class="pill pill-red">⚠️ Parity Alert</span>':''}${gygLow?'<span class="pill pill-green">✓ Best Price on GYG</span>':''}
+          </div>
+          <div style="display:flex;gap:8px">${chs.map(ch => {
+            const p = e.ps[ch.n]; const isLow = p === low;
+            return `<div class="parity-chan${isLow?' lowest':''}"><div style="font-size:10px;color:var(--g500);margin-bottom:2px">${ch.n}</div><div style="font-size:16px;font-weight:700;color:${isLow?'var(--grn)':'var(--dk)'}">${fmtD(p)}</div></div>`;
+          }).join('')}</div>
+        </div>`;
+      }).join('')}
+    </div>
+  </div>`;
+}
+
+function renderUX() {
+  return `<div class="page-content">
+    <div class="page-header"><div><h1>Tools & Settings</h1><p>CSV import/export, audit log, pricing glossary</p></div></div>
+    <div class="grid-2 mb-16">
+      <div class="card"><div class="card-title">Bulk CSV Import / Export</div><p class="card-sub">Manage large inventories</p>
+        <div style="padding:24px;border:2px dashed var(--g300);border-radius:12px;text-align:center;margin-bottom:12px">
+          <div style="font-size:32px;opacity:.4;margin-bottom:8px">📄</div>
+          <div style="font-size:14px;font-weight:600;color:var(--dk)">Drop CSV file here or click to upload</div>
+          <div style="font-size:12px;color:var(--g500);margin-top:4px">Supports .csv and .tsv · Max 10MB</div>
+        </div>
+        <div style="display:flex;gap:8px"><button class="btn btn-sm" style="flex:1">📥 Download Template</button><button class="btn btn-sm btn-primary" style="flex:1">Export All Prices</button></div>
+      </div>
+      <div class="card"><div class="card-title">Pricing Glossary</div><p class="card-sub">Plain-language explanations</p>
+        ${[
+          {t:"RevPAS",d:"Revenue per Available Slot — total revenue ÷ total capacity over a period. The tour equivalent of hotel RevPAR."},
+          {t:"Price Elasticity",d:"How much demand changes when you change price. -0.3 means a 10% price increase reduces bookings by 3%."},
+          {t:"Pricing Health Score",d:"A 0-100 score showing how competitively priced you are within your category and destination."},
+          {t:"Parity",d:"Whether your price on GYG matches your price on other channels. Mismatches hurt conversion."},
+        ].map(g => `<div style="padding:10px 0;border-bottom:1px solid var(--g100)"><div style="font-size:13px;font-weight:700;color:var(--red)">${g.t}</div><div style="font-size:12px;color:var(--g700);line-height:1.5;margin-top:2px">${g.d}</div></div>`).join('')}
+      </div>
+    </div>
+    <div class="card"><div class="card-title">Pricing Change Audit Log</div><p class="card-sub">Full history of changes and impact</p>
+      <table class="data-table"><thead><tr><th>Date</th><th>Action</th><th>Detail</th><th>Impact</th></tr></thead>
+      <tbody>${LOG.map(c => `<tr><td style="font-size:12px;color:var(--g500);font-weight:500">${c.date}</td><td style="font-weight:600">${c.action}</td><td style="color:var(--g700)">${c.detail}</td><td><span class="pill ${pillClass(c.impact)}">${c.impact}</span></td></tr>`).join('')}</tbody></table>
+    </div>
+  </div>`;
+}
+
+// ═══ ROUTING & RENDERING ════════════════════════════════════════
+
+const pages = {
+  overview: renderOverview,
+  pricing: renderPricing,
+  dynamic: renderDynamic,
+  deals: renderDeals,
+  yield: renderYield,
+  bench: renderBench,
+  ai: renderAI,
+  payout: renderPayout,
+  parity: renderParity,
+  ux: renderUX,
+};
+
+function render() {
+  const main = document.getElementById('mainContent');
+  const fn = pages[state.page];
+  if (fn) main.innerHTML = fn();
+
+  // Update nav active state
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.page === state.page);
+  });
+}
+
+function goTo(pageId) {
+  state.page = pageId;
+  render();
+  document.getElementById('mainContent').scrollTop = 0;
+}
+
+// ═══ ACTIONS ════════════════════════════════════════════════════
+
+function startEdit(id, currentVal) {
+  const container = document.getElementById('ep-' + id);
+  if (!container) return;
+  container.innerHTML = `
+    <input class="edit-input" id="ei-${id}" value="${currentVal}" onkeydown="if(event.key==='Enter')saveEdit(${id});if(event.key==='Escape')render()">
+    <button class="edit-save" onclick="saveEdit(${id})"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg></button>
+    <button class="edit-cancel" onclick="render()"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
+  `;
+  document.getElementById('ei-' + id).focus();
+}
+
+function saveEdit(id) {
+  const input = document.getElementById('ei-' + id);
+  const val = parseFloat(input.value);
+  if (!isNaN(val) && val > 0) {
+    state.overrides[id] = val;
+  }
+  render();
+}
+
+function resetPrice(id) {
+  delete state.overrides[id];
+  render();
+}
+
+function applyOne(id) {
+  state.applied.add(id);
+  render();
+}
+
+function applyAll() {
+  EXP.forEach(e => {
+    const np = state.overrides[e.id] !== undefined ? state.overrides[e.id] : e.sug;
+    if (getStatus(e.cur, np) !== 'optimal') state.applied.add(e.id);
+  });
+  render();
+}
+
+function toggleRule(key) {
+  state.rules[key] = !state.rules[key];
+  render();
+}
+
+// ═══ INIT ═══════════════════════════════════════════════════════
+
+document.querySelectorAll('.nav-item').forEach(el => {
+  el.addEventListener('click', () => goTo(el.dataset.page));
+});
+
+render();
+</script>
+</body>
+</html>
